@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Air Quality</title>
+  <meta charset="utf-8">
+</head>
+<body>
+  <h1>Air Quality Sensor</h1>
+  <div id='sensordata'>
+    <div class='item'>
+      <h2>Device ID</h2>
+      <span id='device_id'></span>
+      <span id='device_status'></span>
+    </div>
+    <div class='item'>
+      <h2>PM1.0</h2>
+      <span id='pm_1_0'></span>
+    </div>
+    <div class='item'>
+      <h2>PM2.5</h2>
+      <span id='pm_2_5'></span>
+    </div>
+    <div class='item'>
+      <h2>PM10</h2>
+      <span id='pm_10_0'></span>
+    </div>
+    <div class='item'>
+      <h2>RSSI</h2>
+      <span id='rssi'></span>
+    </div>
+  </div>
+</body>
+
+<script>
+var deviceID = '{{device_id|escapejs}}';
+var SensorMonitor = {
+
+  dom: {
+    'pm_1_0': document.getElementById('pm_1_0'),
+    'pm_2_5': document.getElementById('pm_2_5'),
+    'pm_10_0': document.getElementById('pm_10_0'),
+    'rssi': document.getElementById('rssi'),
+    'device_id': document.getElementById('device_id'),
+    'device_status': document.getElementById('device_status'),
+  },
+
+  updateSensorStatus: function() {
+    var r = new XMLHttpRequest();
+    r.open("GET", "/api/station/status?id=" + deviceID , true);
+    r.onreadystatechange = function () {
+      if (r.readyState != 4) {
+        // not complete
+      } else if (r.status == 200) {
+        // success
+        try {
+          var data = JSON.parse(r.responseText);
+          SensorMonitor.setStatusData(data);
+        } catch(err) {
+          console.log(err.message);
+        }
+        setTimeout(function() {
+          SensorMonitor.updateSensorStatus();
+        }, 1000);
+      } else {
+        // error
+        setTimeout(function() {
+          SensorMonitor.updateSensorStatus();
+        }, 10000);
+      }
+    };
+    r.send();
+  },
+
+  setStatusData: function(data) {
+    SensorMonitor.dom['pm_1_0'].innerText = data.latest['1_0'];
+    SensorMonitor.dom['pm_2_5'].innerText = data.latest['2_5'];
+    SensorMonitor.dom['pm_10_0'].innerText = data.latest['10_0'];
+    SensorMonitor.dom['rssi'].innerText = data.latest['rssi'];
+    SensorMonitor.dom['device_id'].innerText = data['id'];
+
+    recency = parseInt(data['recency'])
+    if (recency < 0 || recency > 10) {
+      SensorMonitor.dom['device_status'].innerText = 'offline';
+    } else {
+      if (recency == 1) {
+        SensorMonitor.dom['device_status'].innerText = '1 second ago';
+      } else {
+        SensorMonitor.dom['device_status'].innerText = recency + ' seconds ago';
+      }
+    }
+  },
+
+};
+
+SensorMonitor.updateSensorStatus();
+
+</script>
+
+</html>

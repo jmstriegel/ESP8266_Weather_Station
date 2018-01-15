@@ -1,0 +1,15 @@
+runtime: python27
+threadsafe: true
+
+handlers:
+- url: /
+  script: index.app
+- url: /api/station/.*
+  script: api.station.app
+- url: /assets/
+  static_dir: static/assets
+
+skip_files:
+- ^env/.*
+- \.git
+- .*\.pyc
