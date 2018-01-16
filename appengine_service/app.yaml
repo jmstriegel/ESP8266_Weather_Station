@@ -6,8 +6,8 @@ handlers:
   script: index.app
 - url: /api/station/.*
   script: api.station.app
-- url: /assets/
-  static_dir: static/assets
+- url: /static/
+  static_dir: views/static
 
 skip_files:
 - ^env/.*

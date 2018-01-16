@@ -1,0 +1,229 @@
+/* base styles for roboto */
+
+
+html, body, div, span, p, blockquote, code, pre,
+h1, h2, h3, h4, h5, h6,
+header, footer, section, nav, article,
+ol, ul, li,
+img, video, iframe,
+i, b,
+table, tr, td {
+  font-size: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  vertical-align: baseline;
+  font: inherit;
+}
+
+html, body {
+  width: 100%;
+  font-family: Roboto, sans-serif;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 20px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-smoothing: antialiased;
+
+}
+body {
+  height: 100%;
+  overflow-x: hidden;
+}
+
+
+
+header {
+  width: 100%;
+  height: auto;
+  overflow: hidden;
+  line-height: 0;
+  font-size: 0;
+  box-shadow: 0px 4px 5px 0px rgba(0, 0, 0, 0.14),
+              0px 1px 10px 0px rgba(0, 0, 0, 0.12),
+              0px 2px 4px -1px rgba(0, 0, 0, 0.2);
+  position: relative;
+  padding: 16px 36px 0 36px;
+  box-sizing: border-box;
+  margin-bottom: 36px;
+  z-index: 2;
+}
+
+header h1 {
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 36px;
+  margin: -8px 0 8px 0;
+}
+
+article {
+  margin: -36px 0 36px 0;
+  padding: 36px;
+  box-shadow: 0px 4px 5px 0px rgba(0, 0, 0, 0.14),
+              0px 1px 10px 0px rgba(0, 0, 0, 0.12),
+              0px 2px 4px -1px rgba(0, 0, 0, 0.2);
+  background-color: #fff;
+  border-radius: 2px;
+  overflow: hidden;
+  box-sizing: border-box;
+  position: relative;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-bottom: 72px;
+}
+
+.body-1,
+p {
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 20px;
+  letter-spacing: 0.04em;
+  margin: -4px 0 64px 0;
+}
+
+
+/**
+ * by default, lists have section level bottom margin.
+ * paragraphs and lists that follow a list should stay in flow with that element.
+ **/
+ul + .body-1, ul + .body-2,
+ol + .body-1, ol + .body-2,
+ol + ol, ol + ul, ul + ul, ul + ol {
+  margin-top: -52px;
+}
+
+
+
+li {
+  font-size: 14px;
+  line-height: 20px;
+  letter-spacing: 0.04em;
+  margin: -4px 0 12px 0;
+  padding-left: 36px;
+  position: relative;
+}
+
+ul, ol {
+  margin-bottom: 72px;
+  margin-top: 0px;
+  list-style-type: none;
+  counter-reset: li-counter;
+}
+ul > li:before {
+  position: absolute;
+  left: 0px;
+  top: 1px;
+  content: "\2022";
+  font-size: 28px;
+}
+ol > li:before {
+  position: absolute;
+  left: 0px;
+  content: counter(li-counter) ".";
+  counter-increment: li-counter;
+}
+ol ol > li:before {
+  content: counter(li-counter, lower-alpha) ".";
+}
+
+ol ol, ul ul {
+  margin-top: 12px;
+  margin-bottom: 12px;
+}
+
+
+b, strong {
+  font-weight: 500;
+}
+
+
+/**
+ * Handle unformatted html (typical helloworld without containers)
+ **/
+body > .display-1, body > .display-2, body > .display-3, body > .display-4,
+body > .headline, body > .title,
+body > .subheading-1, body > .subheading-2,
+body > .caption,
+body > .button,
+body > p, body > .body-1, body > .body-2,
+body > h1, body > h2, body > h3, body > h4, body > h5, body > h6 {
+/*
+  margin-left: 72px;
+  margin-right: 72px;
+*/
+}
+
+p,
+.body-1, .body-2,
+.subheading-1, .subheading-2,
+.caption, .headline, .title,
+ol, ul {
+  max-width: 480px;
+}
+
+body {
+  background-color: #fafafa;
+}
+
+.card {
+  width: 432px;
+  max-width: 100%;
+  min-height: 72px;
+  box-shadow: 0px 4px 5px 0px rgba(0, 0, 0, 0.14),
+              0px 1px 10px 0px rgba(0, 0, 0, 0.12),
+              0px 2px 4px -1px rgba(0, 0, 0, 0.2);
+  background-color: #fff;
+  border-radius: 2px;
+  overflow: hidden;
+  box-sizing: border-box;
+  padding: 36px 36px 0px 36px;
+  margin: 36px 0;
+}
+.card > *:last-child {
+  margin-bottom: 36px;
+}
+.card > *:first-child {
+  margin-bottom: 28px;
+}
+.card .display-2 {
+  padding: 16px 0;
+}
+.card .display-1 {
+  padding: 8px 0;
+}
+.card .headline {
+  padding: 8px 0;
+}
+.card .subheading-2 {
+  padding: 8px 0;
+}
+
+
+header {
+  background-color: #4285F4;
+  color: #fff;
+}
+
+
+article {
+  max-width: 800px;
+}
+
+
+#toggles {
+  position: fixed;
+  right: 36px;
+  bottom: 36px;
+}
+#toggles .button {
+  display: inline-block;
+  padding: 0 16px;
+  opacity: 0.8;
+  cursor: pointer;
+}
+#toggles .button:hover {
+  opacity: 1;
+}
+
+

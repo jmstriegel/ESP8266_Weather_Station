@@ -1,34 +1,97 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Air Quality</title>
+  <title>Air Quality Station</title>
   <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1, width=device-width">
+  <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,400italic" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="static/base.css">
+<style>
+header {
+  background-color: #78002e;
+}
+article {
+}
+#dataplot {
+  background-color: #ad1357;
+}
+#dataplot circle {
+  stroke-width: 2;
+  fill: #ad1357;
+  stroke: rgba(255,255,255,.9);
+}
+#dataplot polyline {
+  stroke-width: 8;
+  stroke: #e35083;
+}
+.cardimage {
+  margin: -36px -36px 36px -36px;
+}
+#device_status {
+  position: absolute;
+  right: 16px;
+  top: 8px;
+  color: #e35083;
+  font-size: 12px;
+  line-height: 24px;
+}
+.item {
+  margin-bottom: 24px;
+}
+.item label {
+  font-size: 13px;
+  display: inline-block;
+  color: #616161;
+  text-transform: uppercase;
+}
+.item .data {
+  font-size: 48px;
+  line-height: 64px;
+  margin-left: 24px;
+  color: #78002e;
+}
+.item .unit {
+  font-size: 13px;
+  color: #78002e;
+}
+</style>
 </head>
 <body>
-  <h1>Air Quality Sensor</h1>
-  <div id='sensordata'>
-    <div class='item'>
-      <h2>Device ID</h2>
-      <span id='device_id'></span>
+  <header>
+    <h1>Air Quality <span id="device_id"></span></h1>
+  </header>
+  <article class="paper">
+    <div class="cardimage">
+      <svg width="100%" height="256" id="dataplot">
+        <polyline fill="none" points=""></polyline>
+        <g class="points">
+        </g>
+      </svg>
       <span id='device_status'></span>
     </div>
-    <div class='item'>
-      <h2>PM1.0</h2>
-      <span id='pm_1_0'></span>
+    <div id='sensordata'>
+      <div class='item'>
+        <label>PM1.0</label>
+        <span class="data" id='pm_1_0'></span>
+        <span class="unit">µg/m<sup>3</sup></span>
+      </div>
+      <div class='item'>
+        <label>PM2.5</label>
+        <span class="data" id='pm_2_5'></span>
+        <span class="unit">µg/m<sup>3</sup></span>
+      </div>
+      <div class='item'>
+        <label>PM10</label>
+        <span class="data" id='pm_10_0'></span>
+        <span class="unit">µg/m<sup>3</sup></span>
+      </div>
+      <div class='item'>
+        <label>RSSI</label>
+        <span class="data" id='rssi'></span>
+        <span class="unit">db</span>
+      </div>
     </div>
-    <div class='item'>
-      <h2>PM2.5</h2>
-      <span id='pm_2_5'></span>
-    </div>
-    <div class='item'>
-      <h2>PM10</h2>
-      <span id='pm_10_0'></span>
-    </div>
-    <div class='item'>
-      <h2>RSSI</h2>
-      <span id='rssi'></span>
-    </div>
-  </div>
+  </article>
 </body>
 
 <script>
@@ -43,6 +106,8 @@ var SensorMonitor = {
     'device_id': document.getElementById('device_id'),
     'device_status': document.getElementById('device_status'),
   },
+
+  lastTimeStamp: 0,
 
   updateSensorStatus: function() {
     var r = new XMLHttpRequest();
@@ -76,7 +141,7 @@ var SensorMonitor = {
     SensorMonitor.dom['pm_2_5'].innerText = data.latest['2_5'];
     SensorMonitor.dom['pm_10_0'].innerText = data.latest['10_0'];
     SensorMonitor.dom['rssi'].innerText = data.latest['rssi'];
-    SensorMonitor.dom['device_id'].innerText = data['id'];
+    SensorMonitor.dom['device_id'].innerText = (" - " + data['id']).toUpperCase();
 
     recency = parseInt(data['recency'])
     if (recency < 0 || recency > 10) {
@@ -88,10 +153,133 @@ var SensorMonitor = {
         SensorMonitor.dom['device_status'].innerText = recency + ' seconds ago';
       }
     }
+
+    if (recency >=0 && DataPlot.lastTimeStamp != data.latest.t) {
+      if (DataPlot.points.length==0) {
+        DataPlot.miny = 0;
+        DataPlot.maxy = 50;
+      }
+      DataPlot.addPoint(data.latest.t, data.latest['2_5']);
+    }
+
+    DataPlot.prune(data.t-70, data.t);
+    DataPlot.minx = data.t-60;
+    DataPlot.maxx = data.t;
+    DataPlot.updateDisplay();
+
+    DataPlot.lastTimeStamp = data.latest.t;
   },
 
 };
 
+DataPlot = {
+  minx: 0,
+  maxx: 100,
+  miny: 0,
+  maxy: 100,
+  points: [],  // { 'd': 2, cx: '0', cy: '20', elem: domelement }
+  domSVG: document.getElementById('dataplot'),
+  domPolyline: document.querySelector('#dataplot polyline'),
+  domPointGroup: document.querySelector('#dataplot .points'),
+  clear: function() {
+    DataPlot.domPolyline.setAttribute('points', '');
+    for (var x=0; x<DataPlot.points.length; x++) {
+      DataPlot.points[x].elem.remove();
+    }
+    DataPlot.points = [];
+  },
+  addPoint: function(rawx, rawy) {
+    var c = document.createElementNS("http://www.w3.org/2000/svg", 'circle');
+    c.setAttribute('cx', -10);
+    c.setAttribute('cy', -10);
+    c.setAttribute('r', 4);
+    DataPlot.domPointGroup.appendChild(c);
+    var point = {
+      x: rawx,
+      y: rawy,
+      elem: c
+    };
+    DataPlot.points.push(point);
+  },
+  prune: function(minx, maxx) {
+    var pruned = [];
+    for (var x=0; x<DataPlot.points.length; x++) {
+      p = DataPlot.points[x];
+      if (p.x < minx || p.x > maxx) {
+        p.elem.remove();
+      } else {
+        pruned.push(p);
+      }
+    }
+    DataPlot.points = pruned;
+  },
+  updateDisplay: function() {
+    if (DataPlot.points.length < 1) {
+      return;
+    }
+    DataPlot.points.sort(function(a,b){
+      if (a.x > b.x) {
+        return 1;
+      } else {
+        return -1;
+      }
+    });
+    var padding = 16;
+    var rect = (DataPlot.domSVG.getClientRects())[0];
+    var h = rect.height - (padding*2);
+    var w = rect.width - (padding*2);
+
+    var minx = DataPlot.minx;
+    var miny = DataPlot.miny;
+    var maxx = DataPlot.maxx;
+    var maxy = DataPlot.maxy;
+    var polylinePoints = "";
+
+    // calculate range
+    for (var x=0; x<DataPlot.points.length; x++) {
+      var p = DataPlot.points[x];
+      if (p.x > maxx) {
+        maxx = p.x;
+      } else if (p.x < minx) {
+        minx = p.x;
+      }
+      if (p.y > maxy) {
+        maxy = p.y;
+      } else if (p.y < miny) {
+        miny = p.y;
+      }
+    }
+
+    // use specified range
+    minx = DataPlot.minx;
+    maxx = DataPlot.maxx;    
+
+    var xrange = maxx - minx;
+    var yrange = maxy - miny;
+
+    if (xrange==0) {
+      xrange = 1;
+    }
+    if (yrange==0) {
+      yrange = 1;
+    }
+
+    // scale point locations to graph dimensions
+    for (var x=0; x<DataPlot.points.length; x++) {
+      var p = DataPlot.points[x];
+      var cx = ((p.x - minx) / xrange) * w + padding;
+      var cy = h - ((p.y - miny) / yrange) * h + padding;
+      cx = Math.round(cx * 100)/100;
+      cy = Math.round(cy * 100)/100;
+      p.elem.setAttribute('cx', cx);
+      p.elem.setAttribute('cy', cy);
+      polylinePoints += cx + "," + cy + " ";
+
+    }
+    DataPlot.domPolyline.setAttribute('points', polylinePoints);
+  }
+};
+DataPlot.clear();
 SensorMonitor.updateSensorStatus();
 
 </script>

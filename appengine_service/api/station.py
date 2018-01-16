@@ -91,6 +91,7 @@ class StatusHandler(webapp2.RequestHandler):
     result = {
       'id': device_id,
       'latest': devicedata['latest'],
+      't': now,
       'recency': timediff
     }
     self.response.out.write(json.dumps(result))
